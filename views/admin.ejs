@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Page</title>
+    <style>
+        /* Custom CSS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            width: 100px;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .user-item {
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .user-item:hover {
+            background-color: #e0e0e0;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .edit-buttons button {
+            margin-left: 10px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .edit-buttons button:hover {
+            background-color: #218838;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 0;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Admin Page</h1>
+    <form id="addUserForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Add User</button>
+    </form>
+    <ul>
+        <% users.forEach(user => { %>
+            <li class="user-item">
+                <div class="user-info">
+                    <input type="text" id="editUsername_<%= user._id %>" value="<%= user.username %>">
+                    <input type="checkbox" id="editIsAdmin_<%= user._id %>" <%= user.isAdmin ? 'checked' : '' %>>
+                    <label for="editIsAdmin_<%= user._id %>">Admin</label>
+                    <span>Created: <%= user.createdAt %></span>
+                    <span>Updated: <%= user.updatedAt %></span>
+                    <% if (user.deletedAt) { %>
+                        <span>Deleted</span>
+                    <% } %>
+                </div>
+                <div class="edit-buttons">
+                    <button onclick="editUser('<%= user._id %>')">Edit</button>
+                    <button onclick="deleteUser('<%= user._id %>')">Delete</button>
+                    <button onclick="viewUserHistory('<%= user._id %>')">View History</button>
+                </div>
+            </li>
+        <% }); %>
+    </ul>
+</div>
+
+<footer>
+    Makar Goryakin SE-2202
+</footer>
+
+<script>
+    document.getElementById('addUserForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+        const userData = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/admin/add-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            });
+            const data = await response.json();
+            console.log(data);
+            alert('User added successfully!');
+            location.reload();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error adding user!');
+        }
+    });
+
+    function deleteUser(id) {
+        fetch(`/admin/delete-user/${id}`, {method: 'DELETE'})
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                location.reload();
+            });
+    }
+
+    function editUser(id) {
+        const newUsername = document.getElementById(`editUsername_${id}`).value;
+        const newIsAdmin = document.getElementById(`editIsAdmin_${id}`).checked;
+
+        const body = {username: newUsername, isAdmin: newIsAdmin};
+
+        fetch(`/admin/edit-user/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                location.reload();
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function viewUserHistory(userId) {
+        window.location.href = '/admin/request-history/' + userId;
+    }
+</script>
+</body>
+</html>
