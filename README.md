@@ -1,4 +1,6 @@
-Website: https://weatherappassignment3-8df983607774.herokuapp.com/login
+### Website: https://weatherappassignment3-8df983607774.herokuapp.com/login
+### Username: "Makar"
+### Password: "12345"
 
 # Weather App
 
